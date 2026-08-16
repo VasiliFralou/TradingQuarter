@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Торговый квартал</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+</head>
+
+<body>
+    <div id="game-container"></div>
+
+    <!-- Новая верхняя панель -->
+    <div id="ui-layer">
+        <div class="top-panel">
+            <!-- Секция Рейтинга -->
+            <div class="rating-sec">
+                <div class="pink-circle"><span id="rating-display"></span></div>
+                <div class="small-bars-col">
+                    <div class="s-bar">
+                        <div class="s-bar-green"></div>
+                    </div>
+                    <div class="s-bar">
+                        <div class="s-bar-blue"></div>
+                    </div>
+                </div>
+                <div class="pink-man">🧍‍♀️</div>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <!-- Секция Премиум-валюты (Баксы) -->
+            <div class="currency-sec">
+                <div class="circle-icon">💵</div>
+                <div class="value-box"><span id="cash-display"></span></div>
+            </div>
+
+            <!-- Секция Монет -->
+            <div class="currency-sec">
+                <div class="circle-icon">🪙</div>
+                <div class="value-box"><span id="money-display"></span></div>
+            </div>
+
+            <!-- Секция Опыта -->
+            <div class="xp-sec">
+                <div class="star-icon"><span id="level-badge" style="margin-top: 2px;"></span></div>
+                <div class="xp-bar-bg">
+                    <div id="xp-fill" class="xp-fill"></div>
+                    <div id="xp-text" class="xp-text-overlay"></div>
+                </div>
+            </div>
+
+            <!-- Секция VIP -->
+            <div class="vip-sec">
+                <div class="vip-text">VIP</div>
+                <div class="vip-bar-bg">
+                    <div class="vip-dots">
+                        <div class="vip-dot"></div>
+                        <div class="vip-dot"></div>
+                        <div class="vip-dot"></div>
+                        <div class="vip-dot"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-divider"></div>
+        </div>
+    </div>
+
+    <div id="bottom-nav">
+        <button class="nav-btn" onclick="openMenu('upgrades')">🛠 Улучшения</button>
+        <button class="nav-btn" onclick="openMenu('catalog')">🛒 Каталог</button>
+        <button class="nav-btn" onclick="openMenu('warehouse')">📦 Склад</button>
+    </div>
+
+    <!-- Панель действий во время строительства/перемещения -->
+    <div id="action-panel" style="display: none; position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 50; gap: 10px;">
+        <button class="nav-btn" id="btn-action-rotate" style="background: #eab308; border-color: #ca8a04; padding: 10px 20px; font-size: 16px;" onclick="rotateCurrentAction()">🔁 Повернуть</button>
+        <button class="nav-btn" style="background: #ef4444; border-color: #b91c1c; padding: 10px 20px; font-size: 16px;" onclick="cancelCurrentAction()">✖ Отмена</button>
+    </div>
+
+    <div id="main-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Меню</h2>
+                <button class="close-btn" onclick="closeMenu()">✖</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <div id="object-modal" class="modal">
+        <div class="modal-content window-sm">
+            <div class="modal-header">
+                <h2>Управление</h2>
+                <button class="close-btn" onclick="closeObjectMenu()">✖</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <button class="btn-order" onclick="startMoveBuilding()">🔄 Переместить</button>
+                <button id="btn-rotate" class="btn-order" style="background: #eab308; border-color: #ca8a04; display: none;" onclick="rotateBuildingInPlace()">🔁 Повернуть</button>
+                <button class="btn-delete" onclick="deleteBuilding()">🗑️ Продать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="door-modal" class="modal">
+        <div class="modal-content window-sm">
+            <div class="modal-header">
+                <h2>Дверь магазина</h2>
+                <button class="close-btn" onclick="closeDoorMenu()">✖</button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <button class="btn-order" onclick="uiToggleDoorState()">🚪 Открыть / Закрыть</button>
+                <button class="btn-order" style="background: #1976d2; border-color: #0d47a1;" onclick="startMoveDoor()">🔄 Переместить</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js?v=21"></script>
+    <script src="js/gameState.js?v=21"></script>
+    <script src="js/GameGraphics.js?v=21"></script>
+    <script src="js/ui.js?v=21"></script>
+
+    <!-- Менеджеры игры -->
+    <script src="js/managers/CameraManager.js?v=21"></script>
+    <script src="js/managers/GridManager.js?v=21"></script>
+    <script src="js/managers/PlacementManager.js?v=21"></script>
+    <script src="js/managers/EntityManager.js?v=21"></script>
+
+    <!-- Главная сцена -->
+    <script src="js/MainScene.js?v=21"></script>
+    <script>
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            parent: 'game-container',
+            backgroundColor: '#87CEEB',
+            scene: [MainScene]
+        };
+        const game = new Phaser.Game(config);
+
+        window.addEventListener('resize', () => {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>
